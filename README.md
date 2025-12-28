@@ -17,11 +17,11 @@ sarwaz/ <br>
 
 ## **License**
 
-Licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+Licensed under the Apache License 2.0 - see the [LICENSE](LICENSE.md) file for details.
 
 ## **Acknowledgements**
 
-This project is made possible thanks to the incredible work of the [Rust](https://www.rust-lang.org/) and [Iced](https://iced.rs/) development communities.
+This project is made possible thanks to the incredible work of the [Rust](https://www.rust-lang.org/)<img src="https://www.rust-lang.org/static/images/rust-logo-blk.svg" width="16" height="16"> and [Iced](https://iced.rs/)<img src="https://iced.rs/logo.svg" width="16" height="16"> development communities.
 
 ## **Author | Автор**
 
