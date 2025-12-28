@@ -9,11 +9,13 @@ Pixel art drawing application
 ## **Structure**
 
 sarwaz/ <br>
-└── src/ <br>
-    ├── .../ <br>
-    │    ├── ... <br>
-    │    └── ... <br>
-    └── main.rs
+├── src/ <br>
+│   ├── .../ <br>
+│   │   ├── ... <br>
+│   │   └── ... <br>
+│   └── main.rs <br>
+├── README.md <br>
+└── LICENSE.md
 
 ## **License**
 
