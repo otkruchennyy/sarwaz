@@ -1,0 +1,166 @@
+Этап 1: Минимальное рабочее ядро (MVP)
+
+Реализуйте строго в этом порядке. Каждый пункт — работающий, тестируемый модуль.
+
+    Проект и модель данных (pixel_core):
+
+        cargo new pixel_editor --lib
+
+        Файл src/lib.rs: объявите модули (pub mod color; pub mod document; и т.д.).
+
+        src/color/palette.rs: struct Palette { colors: Vec<Rgba> }, struct IndexedColor(u8).
+
+        src/document/layer.rs: struct Layer { name: String, pixels: Vec<u8>, size: (u32, u32) }.
+
+        src/document/mod.rs: struct Document { layers: Vec<Layer>, size: (u32, u32), palette: Palette }.
+
+        Напишите тесты: создание документа, установка/получение пикселя в слое.
+
+    Система команд и история (pixel_core):
+
+        src/command/mod.rs: trait Command { fn execute(&self, doc: &mut Document); fn undo(&self, doc: &mut Document); }.
+
+        src/command/history.rs: struct History { commands: Vec<Box<dyn Command>>, cursor: isize } с методами execute(), undo(), redo().
+
+        src/command/basic.rs: реализуйте SetPixelCommand { layer_idx, x, y, old_color, new_color }.
+
+        Протестируйте: последовательность команд, откат, повтор.
+
+    Менеджер состояния и инструменты (pixel_core):
+
+        src/editor.rs: struct Editor { document: Document, history: History, active_tool: Box<dyn Tool>, cursor_pos: (i32, i32) }.
+
+        src/tool/trait.rs: trait Tool { fn on_mouse_down(&self, editor: &mut Editor, pos: (u32, u32)); }.
+
+        src/tool/pencil.rs: struct PencilTool; Реализует создание SetPixelCommand.
+
+    Базовый UI (pixel_ui):
+
+        cargo new pixel_ui --bin внутри workspace или отдельно. Добавьте зависимость pixel_core.
+
+        src/main.rs: стандартная структура Iced (Application с Model, Message, update(), view()).
+
+        src/canvas.rs: кастомный виджет Canvas, отрисовывающий editor.document через iced::widget::canvas.
+
+        Свяжите: Message::CanvasClicked(x, y) → editor.active_tool.on_mouse_down() → history.execute() → перерисовка.
+
+    Интеграция и первый запуск:
+
+        UI должен отображать сетку, менять цвет пикселя по клику, поддерживать undo/redo (горячие клавиши).
+
+Этап 2: Функции для добавления после MVP
+
+Когда этап 1 полностью работает и протестирован, добавляйте в любом порядке.
+
+    Дополнительные инструменты: Eraser, BucketFill (с эффективным алгоритмом), RectangleSelect.
+
+    Управление слоями: Добавление, удаление, изменение порядка, видимость, прозрачность (в Layer и UI).
+
+    Работа с цветом:
+
+        Расширьте Palette: загрузка/сохранение палитр (.gpl, .ase), редактор цветов.
+
+        Реализуйте RgbaColorMode через ColorModel. Переключение режимов в рантайме.
+
+    Анимация:
+
+        В Document добавьте frames: Vec<Document> (или frames: Vec<Vec<Layer>>).
+
+        UI: временная шкала, добавление/удаление кадров, предпросмотр.
+
+    Импорт/экспорт:
+
+        PNG (используйте крейт image), собственный формат (например, ron/serde).
+
+        GIF (фоновое кодирование, крейт gif).
+
+    Оптимизации:
+
+        Кэширование рендера слоя (iced::canvas::Cache).
+
+        Фоновый поток для тяжелых операций.
+
+    Расширяемость и AI:
+
+        Динамическая загрузка инструментов (libloading).
+
+        Модуль ai_assistant с трейтом Assistant, например для autotrace выделения.
+
+Полная структура проекта и описание
+text
+
+pixel_editor/          # Workspace Cargo.toml
+├── pixel_core/        # Крейт с чистой логикой
+│   ├── src/
+│   │   ├── lib.rs
+│   │   ├── color/          # Вся логика цвета
+│   │   │   ├── mod.rs      # (Re-)export модулей
+│   │   │   ├── palette.rs  # Palette, ColorModel
+│   │   │   ├── indexed.rs  # IndexedColor
+│   │   │   └── rgba.rs     # RgbaColor (на будущее)
+│   │   ├── document/       # Модель данных
+│   │   │   ├── mod.rs
+│   │   │   ├── layer.rs    # Layer { name, pixels, visible, opacity }
+│   │   │   └── animation.rs # Frame, Timeline (на будущее)
+│   │   ├── command/        # Паттерн Команда для undo/redo
+│   │   │   ├── mod.rs
+│   │   │   ├── history.rs  # History { commands, cursor }
+│   │   │   ├── trait.rs    # trait Command
+│   │   │   ├── basic.rs    # SetPixel, FillArea, etc.
+│   │   │   └── layer.rs    # AddLayer, MergeLayer (на будущее)
+│   │   ├── tool/           # Инструменты
+│   │   │   ├── mod.rs
+│   │   │   ├── trait.rs    # trait Tool
+│   │   │   ├── pencil.rs
+│   │   │   ├── eraser.rs
+│   │   │   └── bucket.rs   # BucketFill (на будущее)
+│   │   ├── editor.rs       # Главная структура состояния приложения
+│   │   └── export/         # Экспорт в файлы (на будущее)
+│   │       ├── mod.rs
+│   │       ├── png.rs
+│   │       └── gif.rs
+├── pixel_ui/          # Крейт с интерфейсом на Iced
+│   ├── src/
+│   │   ├── main.rs         # Точка входа, настройка Iced
+│   │   ├── app.rs          # Struct App { editor, .. }, enum Message
+│   │   ├── canvas.rs       # Кастомный виджет CanvasWidget
+│   │   └── widgets/        # Остальные виджеты UI
+│   │       ├── mod.rs
+│   │       ├── toolbar.rs
+│   │       ├── color_picker.rs
+│   │       └── layer_list.rs
+└── Cargo.toml         # Workspace определение
+
+Ключевые архитектурные принципы:
+
+    Однонаправленный поток данных: Пользователь → UI (Message) → Editor → Tool → Command → History → Document → обновление состояния → перерисовка UI.
+
+    Разделение ответственности:
+
+        pixel_core ничего не знает об Iced, отрисовке, файловой системе. Только данные, логика, алгоритмы.
+
+        pixel_ui — тонкий слой, преобразующий ввод в сообщения и отрисовывающий состояние core.
+
+    Интерфейсы, а не реализации: Command, Tool, ColorModel, Exporter. Это позволит добавлять функциональность без переписывания ядра.
+
+    Производительность через правильные структуры данных: Vec<u8> для пикселей, кэширование текстур, эффективные алгоритмы заливки.
+
+Слабые места, требующие внимания:
+
+    Производительность отрисовки при зуме: Реализуйте Viewport, который вычисляет видимую область и масштаб. Кэшируйте уменьшенные версии слоёв (thumbnail_cache).
+
+    Память для анимации: Хранение Vec<Document> для каждого кадра съест память. Позже можно оптимизировать, храня только различия между кадрами (например, Frame { changes: Vec<Command> }).
+
+    Инструмент BucketFill: Наивная рекурсия (flood fill) упадёт по стеку на 2K*2K. Используйте алгоритм со сканированием строк (scanline) и VecDeque для очереди.
+
+Старт сегодня:
+
+    cargo new pixel_editor --lib
+
+    В src/ создайте папки color/, document/.
+
+    Реализуйте Palette (5-10 цветов) и Layer (двумерный Vec<u8>).
+
+    Напишите тест: создать холст 32x32, установить пиксель (5,5) в цвет индекса 1, проверить.
+
+Это даст вам осязаемый результат за час и подтвердит, что архитектура работает.
