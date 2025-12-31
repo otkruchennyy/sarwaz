@@ -27,15 +27,12 @@ pixel_editor/
         ├── app/
         │   ├── mod.rs
         │   └── ...
-        │
-        ├── document/
+        ├── core/
         │   ├── mod.rs
         │   └── ...
-        │
-        ├── tools/
+        ├── logic/
         │   ├── mod.rs
         │   └── ...
-        │
         └── ui/
             ├── mod.rs
             └── ...
