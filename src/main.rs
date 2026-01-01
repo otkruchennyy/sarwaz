@@ -1,5 +1,8 @@
-use sarwaz::launcher::init as launch;
+use sarwaz::launcher::launch as launcherInit;
 
 fn main() {
-    launch::init();
+    if let Err(e) = launcherInit::launcher() {
+        eprintln!("Ошибка запуска приложения: {}", e);
+        std::process::exit(1);
+    }
 }
