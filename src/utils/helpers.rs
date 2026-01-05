@@ -1,86 +1,165 @@
-use serde_json::json;
+use serde_json::{json, Value};
 use std::env;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use thiserror::Error;
 
-pub fn create_json() -> std::io::Result<()> {
-    let data = json!({});
-    let mut file_path = get_project_root();
-
-    file_path.push("data.json");
-    let json_string = serde_json::to_string_pretty(&data)?;
-
-    // create or rewrite JSON
-    fs::write(&file_path, json_string)?;
-
-    println!("Файл создан: {:?}", file_path);
-    Ok(())
+#[derive(Debug, Error)]
+pub enum ProjectError {
+    #[error("Failed to create directory: {0}")]
+    DirectoryCreation(String),
+    #[error("JSON serialization error: {0}")]
+    JsonError(#[from] serde_json::Error),
+    #[error("IO error: {0}")]
+    IoError(#[from] std::io::Error),
 }
 
-pub fn add_propet_json() {}
+pub fn create_empty_json(target_dir: &Path) -> Result<PathBuf, ProjectError> {
+    let file_path = target_dir.join("data.json");
+    fs::write(&file_path, serde_json::to_string_pretty(&json!({}))?)?;
+    Ok(file_path)
+}
 
-pub fn remove_propet_json() {}
+pub struct ProjectManager {
+    project_root: PathBuf,
+    data_file: PathBuf,
+}
 
-pub fn get_project_root() -> PathBuf {
-    let mut current_path = env::current_exe()
-        .expect("Не удалось получить путь к исполняемому файлу")
-        .parent()
-        .expect("Исполняемый файл не имеет родительской директории")
-        .to_path_buf();
+impl ProjectManager {
+    pub fn new() -> Result<Self, ProjectError> {
+        let project_root = Self::find_or_create_project_root()?;
+        Ok(Self {
+            data_file: project_root.join("data.json"),
+            project_root,
+        })
+    }
 
-    // 1. find "sarwaz"
-    let mut sarwaz_folder: Option<PathBuf> = None;
-    let mut temp_path = current_path.clone();
-
-    loop {
-        if let Some(folder_name) = temp_path.file_name() {
-            let folder_name_str = folder_name.to_string_lossy().to_lowercase();
-            if folder_name_str.contains("sarwaz") {
-                sarwaz_folder = Some(temp_path.clone());
-                break;
+    fn find_or_create_project_root() -> Result<PathBuf, ProjectError> {
+        if let Ok(env_path) = env::var("SARWAZ_ROOT") {
+            let path = PathBuf::from(env_path);
+            if path.exists() {
+                Self::ensure_assets_dir(&path)?;
+                return Ok(path);
             }
         }
 
-        match temp_path.parent() {
-            Some(parent) => temp_path = parent.to_path_buf(),
-            None => break,
-        }
+        let current_dir = env::current_dir()?;
+        Self::find_project_root_from(&current_dir)
+            .or_else(|| Self::find_sarwaz_folder(&current_dir))
+            .map(|p| {
+                Self::ensure_assets_dir(&p).ok();
+                p
+            })
+            .or_else(|| {
+                Self::ensure_assets_dir(&current_dir).ok();
+                Some(current_dir)
+            })
+            .ok_or_else(|| {
+                ProjectError::DirectoryCreation("Не удалось определить корень проекта".into())
+            })
     }
 
-    // 2. if resources not in "sarwaz" create them
-    if let Some(sarwaz_path) = sarwaz_folder {
-        let resources_dir = sarwaz_path.join("resources");
-        if !resources_dir.exists() {
-            fs::create_dir_all(&resources_dir).expect("Не удалось создать папку resources");
+    fn find_project_root_from(start: &Path) -> Option<PathBuf> {
+        let mut current = start.to_path_buf();
+        while let Some(parent) = current.parent() {
+            if current.join("assets").exists() {
+                return Some(current);
+            }
+            current = parent.to_path_buf();
         }
-        return sarwaz_path;
+        None
     }
 
-    // 3. find "resources"
-    loop {
-        let resources_path = current_path.join("resources");
-
-        if resources_path.exists() && resources_path.is_dir() {
-            return current_path;
+    fn find_sarwaz_folder(start: &Path) -> Option<PathBuf> {
+        let mut current = start.to_path_buf();
+        while let Some(parent) = current.parent() {
+            if let Some(name) = current.file_name() {
+                if name.to_string_lossy().to_lowercase().contains("sarwaz") {
+                    return Some(current);
+                }
+            }
+            current = parent.to_path_buf();
         }
-
-        match current_path.parent() {
-            Some(parent) => current_path = parent.to_path_buf(),
-            None => break,
-        }
+        None
     }
 
-    // 4. Fallback: current directory
-    let current_dir = env::current_dir().unwrap();
-    let resources_dir = current_dir.join("resources");
-
-    if !resources_dir.exists() {
-        fs::create_dir_all(&resources_dir).expect("Не удалось создать папку resources");
+    fn ensure_assets_dir(project_root: &Path) -> Result<(), ProjectError> {
+        let assets_dir = project_root.join("assets");
+        if !assets_dir.exists() {
+            fs::create_dir_all(&assets_dir).map_err(|e| {
+                ProjectError::DirectoryCreation(format!("{}: {}", assets_dir.display(), e))
+            })?;
+        }
+        Ok(())
     }
 
-    current_dir
+    pub fn project_root(&self) -> &Path {
+        &self.project_root
+    }
+
+    pub fn data_file(&self) -> &Path {
+        &self.data_file
+    }
+
+    pub fn data_file_exists(&self) -> bool {
+        self.data_file.is_file()
+    }
+
+    pub fn add_to_json(&self, key: &str, value: Value) -> Result<(), ProjectError> {
+        let mut data: Value = if self.data_file_exists() {
+            serde_json::from_str(&fs::read_to_string(&self.data_file)?)?
+        } else {
+            json!({})
+        };
+
+        data[key] = value;
+        fs::write(&self.data_file, serde_json::to_string_pretty(&data)?)?;
+        Ok(())
+    }
+
+    pub fn remove_from_json(&self, key: &str) -> Result<(), ProjectError> {
+        if !self.data_file_exists() {
+            return Ok(());
+        }
+
+        let mut data: Value = serde_json::from_str(&fs::read_to_string(&self.data_file)?)?;
+        if let Some(obj) = data.as_object_mut() {
+            obj.remove(key);
+        }
+
+        fs::write(&self.data_file, serde_json::to_string_pretty(&data)?)?;
+        Ok(())
+    }
 }
 
-pub fn file_exists(path: &PathBuf) -> bool {
-    path.exists() && path.is_file()
+pub fn get_project_root() -> PathBuf {
+    let mut current = env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+
+    loop {
+        if current.join("assets").exists() {
+            return current;
+        }
+
+        if let Some(name) = current.file_name() {
+            if name.to_string_lossy().to_lowercase().contains("sarwaz") {
+                let assets_dir = current.join("assets");
+                if !assets_dir.exists() {
+                    let _ = fs::create_dir_all(&assets_dir);
+                }
+                return current;
+            }
+        }
+
+        match current.parent() {
+            Some(parent) => current = parent.to_path_buf(),
+            None => break,
+        }
+    }
+
+    let assets_dir = env::current_dir()
+        .unwrap_or_else(|_| PathBuf::from("."))
+        .join("assets");
+
+    let _ = fs::create_dir_all(&assets_dir);
+    env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
 }
