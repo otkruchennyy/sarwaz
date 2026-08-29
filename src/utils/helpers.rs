@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::Path;
 
-fn read_txt(path: &str) -> Result<String, String> {
+fn read_text_file(path: &str) -> Result<String, String> {
     // let current: String;
     // match fs::read_to_string(path) {
     //     Ok(n) => current = n,
