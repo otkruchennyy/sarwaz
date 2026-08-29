@@ -1,2 +1,18 @@
-use std::Path{Path: PathBuf};
-use  std::fs;
+use std::fs;
+use std::path::Path;
+
+fn read_txt(path: &str) -> Result<String, String> {
+    // let current: String;
+    // match fs::read_to_string(path) {
+    //     Ok(n) => current = n,
+    //     Err(e) => {
+    //         let err_msg: String = format!("Cannot read file {} : {}", path, e);
+    //         return Err(err_msg);
+    //     }
+    // }
+    // return Ok(current);
+
+    let current =
+        fs::read_to_string(path).map_err(|e| format!("Cannot read file: {}\n err: {}", path, e))?;
+    Ok(current)
+}
