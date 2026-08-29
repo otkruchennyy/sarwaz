@@ -16,3 +16,8 @@ fn read_text_file(path: &str) -> Result<String, String> {
         fs::read_to_string(path).map_err(|e| format!("Cannot read file: {}\n err: {}", path, e))?;
     Ok(current)
 }
+
+fn write_text_file(path: &str, contents: &str) -> Result<(), String> {
+    fs::write(path, contents).map_err(|e| format!("Cannot write to {}\n err: {}", path, e))?;
+    Ok(())
+}
