@@ -21,3 +21,8 @@ fn write_text_file(path: &str, contents: &str) -> Result<(), String> {
     fs::write(path, contents).map_err(|e| format!("Cannot write to {}\n err: {}", path, e))?;
     Ok(())
 }
+
+fn append_text_file(path: &str, contents: &str) -> Result<(), String> {
+    fs::write(path, contents).map_err(|e| format!("Cannot append {}\n err: {}", path, e))?;
+    Ok(())
+}
