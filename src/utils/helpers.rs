@@ -1,5 +1,7 @@
 use std::fs;
-use std::path::Path;
+use std::io::Write;
+use std::path::Path
+use std::path::Path;;
 
 fn read_text_file(path: &str) -> Result<String, String> {
     // let current: String;
@@ -23,6 +25,15 @@ fn write_text_file(path: &str, contents: &str) -> Result<(), String> {
 }
 
 fn append_text_file(path: &str, contents: &str) -> Result<(), String> {
-    fs::write(path, contents).map_err(|e| format!("Cannot append {}\n err: {}", path, e))?;
+    let mut content = fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)
+        .map_err(|e| format!("Cannot append file: {}\n err: {}", path, e))?;
+
+    content
+        .write_all(contents.as_bytes())
+        .map_err(|e| format!("Cannot append file: {}\n err: {}", path, e))?;
+
     Ok(())
 }
