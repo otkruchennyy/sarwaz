@@ -1,9 +1,8 @@
 use std::fs;
 use std::io::Write;
-use std::path::Path
-use std::path::Path;;
+// use std::path::Path;
 
-fn read_text_file(path: &str) -> Result<String, String> {
+pub fn read_text_file(path: &str) -> Result<String, String> {
     // let current: String;
     // match fs::read_to_string(path) {
     //     Ok(n) => current = n,
@@ -19,12 +18,12 @@ fn read_text_file(path: &str) -> Result<String, String> {
     Ok(current)
 }
 
-fn write_text_file(path: &str, contents: &str) -> Result<(), String> {
+pub fn write_text_file(path: &str, contents: &str) -> Result<(), String> {
     fs::write(path, contents).map_err(|e| format!("Cannot write to {}\n err: {}", path, e))?;
     Ok(())
 }
 
-fn append_text_file(path: &str, contents: &str) -> Result<(), String> {
+pub fn append_text_file(path: &str, contents: &str) -> Result<(), String> {
     let mut content = fs::OpenOptions::new()
         .create(true)
         .append(true)
