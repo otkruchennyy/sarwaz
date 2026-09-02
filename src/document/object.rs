@@ -1,8 +1,10 @@
 // Поворот считается строго против часовой стрелки и от точки 2π
 
+// вдлженные struct + impl for ... блоки
+
 struct Dot {
     x: f32,
-    t: f32,
+    y: f32,
 }
 
 struct Color {
@@ -11,6 +13,48 @@ struct Color {
     b: u8,
     a: u8,
 }
+
+impl Default for Color {
+    fn default() -> Self {
+        Self {
+            r: 0,
+            g: 0,
+            b: 0,
+            a: 255,
+        }
+    }
+}
+
+struct Scale {
+    scale_x_before: f32, // тут скейл в edit
+    scale_y_before: f32,
+    scale_x_after: f32, // тут скейл после edit
+    scale_y_after: f32,
+}
+
+impl Default for Scale {
+    fn default() -> Self {
+        Self {
+            scale_x_before: 1.0,
+            scale_y_before: 1.0,
+            scale_x_after: 1.0,
+            scale_y_after: 1.0,
+        }
+    }
+}
+
+#[derive(Default)]
+struct Location {
+    x: f32,
+    y: f32,
+}
+
+struct IdName {
+    id: u16,
+    name: String,
+}
+
+// enum блоки
 
 #[derive(Default)]
 enum FontWeight {
@@ -80,40 +124,27 @@ impl TextAlignment {
     }
 }
 
-impl Default for Color {
+enum ImageSource {
+    Path(String),
+    Url(String),
+}
+
+impl Default for ImageSource {
     fn default() -> Self {
-        Self {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 255,
-        }
+        ImageSource::Path(String::new())
     }
 }
 
-struct Scale {
-    scale_x_before: f32, // тут скейл в edit
-    scale_y_before: f32,
-    scale_x_after: f32, // тут скейл после edit
-    scale_y_after: f32,
+enum Obj {
+    Circle(Circle),
+    Triangle(Triangle),
+    Line(Line),
+    Polygon(Polygon),
+    Text(Text),
+    Image(Image),
 }
 
-impl Default for Scale {
-    fn default() -> Self {
-        Self {
-            scale_x_before: 1.0,
-            scale_y_before: 1.0,
-            scale_x_after: 1.0,
-            scale_y_after: 1.0,
-        }
-    }
-}
-
-#[derive(Default)]
-struct Location {
-    x: f32,
-    y: f32,
-}
+// объекты struct + impl for ...
 
 struct Circle {
     location: Location,
@@ -121,6 +152,8 @@ struct Circle {
     rotation: f32,
     radius: f32,
     line_width: f32,
+    opacity: f32,
+    is_visibility: bool,
 }
 
 impl Default for Circle {
@@ -131,24 +164,30 @@ impl Default for Circle {
             rotation: 0.0,
             radius: 100.0,
             line_width: 5.0,
+            opacity: 1.0,
+            is_visibility: true,
         }
     }
 }
 
-struct Triange {
+struct Triangle {
     location: Location,
     scale: Scale,
     rotation: f32,
     height: f32,
+    opacity: f32,
+    is_visibility: bool,
 }
 
-impl Default for Triange {
+impl Default for Triangle {
     fn default() -> Self {
         Self {
             location: Location::default(),
             scale: Scale::default(),
             rotation: 0.0,
             height: 50.0,
+            opacity: 1.0,
+            is_visibility: true,
         }
     }
 }
@@ -158,6 +197,8 @@ struct Line {
     dot_2: Location,
     scale: Scale,
     rotation: f32,
+    opacity: f32,
+    is_visibility: bool,
 }
 
 impl Default for Line {
@@ -167,6 +208,8 @@ impl Default for Line {
             dot_2: Location::default(),
             scale: Scale::default(),
             rotation: 0.0,
+            opacity: 1.0,
+            is_visibility: true,
         }
     }
 }
@@ -175,6 +218,20 @@ struct Polygon {
     dots: Vec<Dot>,
     scale: Scale,
     rotation: f32,
+    opacity: f32,
+    is_visibility: bool,
+}
+
+impl Default for Polygon {
+    fn default() -> Self {
+        Self {
+            dots: Vec::new(),
+            scale: Scale::default(),
+            rotation: 0.0,
+            opacity: 1.0,
+            is_visibility: true,
+        }
+    }
 }
 
 struct Text {
@@ -182,13 +239,14 @@ struct Text {
     content: String,
     font_family: String,
     font_size: f32,
-    font_weight: u32,      // enum: 400(Normal), 500, ...
-    font_style: FontStyle, // enum: Normal(Normal), Italic, Oblique, ...
+    font_weight: FontWeight, // enum: 400(Normal), 500, ...
+    font_style: FontStyle,   // enum: Normal(Normal), Italic, Oblique, ...
     color: Color,
-    opacity: f32,
     rotation: f32,
     scale: Scale,
     alignment: TextAlignment,
+    opacity: f32,
+    is_visibility: bool,
 }
 
 impl Default for Text {
@@ -198,13 +256,68 @@ impl Default for Text {
             content: "Lorem Ipsum".to_string(),
             font_family: "Arial".to_string(),
             font_size: 16.0,
-            font_weight: 400,
+            font_weight: FontWeight::default(),
             font_style: FontStyle::default(),
             color: Color::default(),
-            opacity: 0.0,
             rotation: 0.0,
             scale: Scale::default(),
             alignment: TextAlignment::default(),
+            opacity: 1.0,
+            is_visibility: true,
         }
     }
+}
+
+struct Image {
+    source: ImageSource, // enum: url, path
+    location: Location,
+    scale: Scale,
+    width: f32,
+    height: f32,
+    rotation: f32,
+    opacity: f32,
+    is_visibility: bool,
+}
+
+impl Image {
+    fn new(source: ImageSource) -> Self {
+        Self {
+            source,
+            location: Location::default(),
+            scale: Scale::default(),
+            width: 0.0,
+            height: 0.0,
+            rotation: 0.0,
+            opacity: 1.0,
+            is_visibility: true,
+        }
+    }
+}
+
+struct Layer {
+    obj: Vec<Obj>,
+    id: u16,
+    opacity: f32,
+    name: String,
+    is_visibility: bool,
+}
+
+impl Layer {
+    fn new(obj: Vec<Obj>, id_name: IdName) -> Self {
+        Self {
+            obj,
+            id: id_name.id,
+            opacity: 1.0,
+            name: id_name.name,
+            is_visibility: true,
+        }
+    }
+}
+
+struct Group {
+    Layers: Vec<Layer>,
+    id: u16,
+    opacity: f32,
+    name: String,
+    is_visibility: bool,
 }

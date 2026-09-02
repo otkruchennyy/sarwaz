@@ -1,20 +1,20 @@
-## **Installation**
+## **Installation | Установка**
 
 Under development
 
-## **Usage**
+## **Usage | Использование**
 
 art drawing application
 
-## **Structure**
+## **Structure | Структура**
 
 Coming soon
 
-## **License**
+## **License | Лицензия**
 
 Licensed under the Apache License 2.0 - see the [LICENSE](LICENSE.md) file for details.
 
-## **Acknowledgements**
+## **Acknowledgements | Благодарность**
 
 This project is made possible thanks to the incredible work of the [Rust](https://www.rust-lang.org/)<img src="https://rustacean.net/assets/rustacean-flat-happy.png" width="22" height="16"> and [Iced](https://iced.rs/)<img src="https://iced.rs/logo.svg" width="16" height="16"> development communities.
 
