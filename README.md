@@ -1,41 +1,14 @@
 ## **Installation**
 
-Clone repository
+Under development
 
 ## **Usage**
 
-Pixel art drawing application
+art drawing application
 
 ## **Structure**
 
-sarwaz/ <br>
-├── src/ <br>
-│   ├── .../ <br>
-│   │   ├── ... <br>
-│   │   └── ... <br>
-│   └── main.rs <br>
-├── README.md <br>
-└── LICENSE.md
-
-Reference structure
-
-pixel_editor/
-    ├── Cargo.toml
-    └── src/
-        ├── main.rs
-        ├── lib.rs
-        ├── app/
-        │   ├── mod.rs
-        │   └── ...
-        ├── core/
-        │   ├── mod.rs
-        │   └── ...
-        ├── logic/
-        │   ├── mod.rs
-        │   └── ...
-        └── ui/
-            ├── mod.rs
-            └── ...
+Coming soon
 
 ## **License**
 
