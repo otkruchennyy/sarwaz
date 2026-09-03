@@ -2,6 +2,14 @@
 
 // вдлженные struct + impl for ... блоки
 
+// impl Document(&mut self, obj: Vec<Obj>) {
+//     fn create_layerr( &mut self, obj: Vec<Obj>) {
+//         let id_name = self.layer_id_counter.generatw=e();
+//         let layer = Layer::new(obj, id_name);
+//         self.layers.push(layer);
+//     }
+// } // TODO: uncomment
+
 struct Dot {
     x: f32,
     y: f32,
@@ -49,7 +57,7 @@ struct Location {
     y: f32,
 }
 
-struct IdName {
+pub struct IdName {
     id: u16,
     name: String,
 }
