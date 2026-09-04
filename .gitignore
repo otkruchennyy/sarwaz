@@ -1,5 +1,5 @@
 /target/
-/data_idea/
+/dataidea/
 **/*.rs.bk
 Cargo.lock
 
