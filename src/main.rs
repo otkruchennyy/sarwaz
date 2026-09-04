@@ -6,3 +6,4 @@ fn main() {
     logs::setup_logger().expect("Failed to setup logger");
     log::info!("Run application. Welcome message: {}", welcome_message);
 }
+ 

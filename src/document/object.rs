@@ -58,8 +58,8 @@ struct Location {
 }
 
 pub struct IdName {
-    id: u16,
-    name: String,
+    pub id: u16,
+    pub name: String,
 }
 
 // enum блоки
