@@ -152,6 +152,11 @@ enum Obj {
     Image(Image),
 }
 
+enum GroupElement {
+    Group(Group),
+    Layer(Layer),
+}
+
 // объекты struct + impl for ...
 
 struct Circle {
@@ -303,7 +308,7 @@ impl Image {
 }
 
 struct Layer {
-    obj: Vec<Obj>,
+    content: Vec<Obj>,
     id: u16,
     opacity: f32,
     name: String,
@@ -311,9 +316,9 @@ struct Layer {
 }
 
 impl Layer {
-    fn new(obj: Vec<Obj>, id_name: IdName) -> Self {
+    fn new(content: Vec<Obj>, id_name: IdName) -> Self {
         Self {
-            obj,
+            content,
             id: id_name.id,
             opacity: 1.0,
             name: id_name.name,
@@ -323,7 +328,7 @@ impl Layer {
 }
 
 struct Group {
-    Layers: Vec<Layer>,
+    content: Vec<GroupElement>,
     id: u16,
     opacity: f32,
     name: String,
