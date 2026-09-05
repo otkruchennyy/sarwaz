@@ -1,6 +1,6 @@
 use crate::document::object::IdName;
 
-struct IdCounter {
+pub struct IdCounter {
     next_id: u16,
 }
 
@@ -11,7 +11,7 @@ impl Default for IdCounter {
 }
 
 impl IdCounter {
-    fn next(&mut self) -> IdName {
+    pub fn next(&mut self) -> IdName {
         let res = IdName {
             id: self.next_id,
             name: format!("#{}", self.next_id).to_string(),

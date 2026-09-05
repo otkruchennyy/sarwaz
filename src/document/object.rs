@@ -10,11 +10,13 @@
 //     }
 // } // TODO: uncomment
 
+#[derive(Debug)]
 struct Dot {
     x: f32,
     y: f32,
 }
 
+#[derive(Debug)]
 struct Color {
     r: u8,
     g: u8,
@@ -33,6 +35,7 @@ impl Default for Color {
     }
 }
 
+#[derive(Debug)]
 struct Scale {
     scale_x_before: f32, // тут скейл в edit
     scale_y_before: f32,
@@ -51,12 +54,13 @@ impl Default for Scale {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 struct Location {
     x: f32,
     y: f32,
 }
 
+#[derive(Debug)]
 pub struct IdName {
     pub id: u16,
     pub name: String,
@@ -64,7 +68,7 @@ pub struct IdName {
 
 // enum блоки
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 enum FontWeight {
     Thin,       // 100
     ExtraLight, // 200
@@ -94,7 +98,7 @@ impl FontWeight {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 enum FontStyle {
     #[default]
     Normal,
@@ -114,7 +118,7 @@ impl FontStyle {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 enum TextAlignment {
     #[default]
     Left,
@@ -132,6 +136,7 @@ impl TextAlignment {
     }
 }
 
+#[derive(Debug)]
 enum ImageSource {
     Path(String),
     Url(String),
@@ -143,7 +148,8 @@ impl Default for ImageSource {
     }
 }
 
-enum Obj {
+#[derive(Debug)]
+pub enum Obj {
     Circle(Circle),
     Triangle(Triangle),
     Line(Line),
@@ -152,13 +158,15 @@ enum Obj {
     Image(Image),
 }
 
-enum GroupElement {
+#[derive(Debug)]
+pub enum GroupElement {
     Group(Group),
     Layer(Layer),
 }
 
 // объекты struct + impl for ...
 
+#[derive(Debug)]
 struct Circle {
     location: Location,
     scale: Scale,
@@ -183,6 +191,7 @@ impl Default for Circle {
     }
 }
 
+#[derive(Debug)]
 struct Triangle {
     location: Location,
     scale: Scale,
@@ -205,6 +214,7 @@ impl Default for Triangle {
     }
 }
 
+#[derive(Debug)]
 struct Line {
     dot_1: Location,
     dot_2: Location,
@@ -227,6 +237,7 @@ impl Default for Line {
     }
 }
 
+#[derive(Debug)]
 struct Polygon {
     dots: Vec<Dot>,
     scale: Scale,
@@ -247,6 +258,7 @@ impl Default for Polygon {
     }
 }
 
+#[derive(Debug)]
 struct Text {
     location: Location,
     content: String,
@@ -281,6 +293,7 @@ impl Default for Text {
     }
 }
 
+#[derive(Debug)]
 struct Image {
     source: ImageSource, // enum: url, path
     location: Location,
@@ -307,16 +320,17 @@ impl Image {
     }
 }
 
-struct Layer {
-    content: Vec<Obj>,
-    id: u16,
+#[derive(Debug)]
+pub struct Layer {
+    pub content: Vec<Obj>,
+    pub id: u16,
     opacity: f32,
     name: String,
     is_visibility: bool,
 }
 
 impl Layer {
-    fn new(content: Vec<Obj>, id_name: IdName) -> Self {
+    pub fn new(content: Vec<Obj>, id_name: IdName) -> Self {
         Self {
             content,
             id: id_name.id,
@@ -327,10 +341,23 @@ impl Layer {
     }
 }
 
-struct Group {
-    content: Vec<GroupElement>,
-    id: u16,
+#[derive(Debug)]
+pub struct Group {
+    pub content: Vec<GroupElement>,
+    pub id: u16,
     opacity: f32,
     name: String,
     is_visibility: bool,
+}
+
+impl Group {
+    pub fn new(content: Vec<GroupElement>, id_name: IdName) -> Self {
+        Self {
+            content,
+            id: id_name.id,
+            opacity: 1.0,
+            name: id_name.name,
+            is_visibility: true,
+        }
+    }
 }
